@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - v*
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x,20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build all plugins
+        uses: ./.github/actions/build
+        with:
+          node_version: ${{ matrix.node-version }}
+
+      - name: Verify files generated
+        run: |
+          ls -la plugins/*/dist  
+
+      # ###############################################
+      # STEPS NOT WORKING
+      # ###############################################
+      #- name: use node.js ${{ matrix.node-version }}
+      #  uses: actions/setup-node@v4.0.1
+      #  with:
+      #    node-version: ${{ matrix.node-version }}
+      #    registry-url: https://registry.npmjs.org/ # Needed for auth
+      #- name: Enable corepack
+      #  run: corepack enable
+
+      #- name: yarn install
+      #  uses: backstage/actions/yarn-install@v0.6.5
+      #  with:
+      #    cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
+      #
+      #- name: Install yarnpkg/plugin-workspace-tools to enable yarn workspaces
+      #  run: |
+      #    yarn plugin import @yarnpkg/plugin-workspace-tools
+      #
+      #- name: Check yarn version and plugins
+      #  run: |
+      #    yarn -v
+      #    yarn plugin list
+      #    ls -la node_modules/.bin
+
+      # - name: Build type declarations
+      #   run: |
+      #     yarn workspaces foreach -A -v run tsc
+      #
+      # #- run: yarn test
+      # - run: yarn workspaces foreach -A -v run build
